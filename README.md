@@ -102,6 +102,9 @@ manualmente contra Meta Ads e Google Ads.
 
 ## Colocar no seu domínio
 
+Em produção, o app fica em **https://www.buzzmeup.com.br** (domínio próprio,
+configurado na Vercel — `buzzmeup.com.br` redireciona pra `www`).
+
 Depois do deploy na Vercel (passo acima), pra acessar por `app.seudominio.com.br`
 em vez do endereço `*.vercel.app`:
 
