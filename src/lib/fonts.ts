@@ -1,8 +1,9 @@
 import localFont from "next/font/local";
-import { Poppins } from "next/font/google";
 
-// Brand type system (design-system/tokens/fonts.css):
-// Stinger = display/headings, Basic Sans = body/UI, Poppins = big stat numerals.
+// BuzzConnect type system (buzzconnect/tokens/typography.css): Stinger only
+// for page/tab titles, Basic Sans for everything else — including KPI
+// values and numerals (Poppins is exclusive to the BuzzMeUp marketing
+// design system's big social-post stats, not used in the product UI).
 export const stinger = localFont({
   src: [
     { path: "../fonts/StingerTrial-Regular.ttf", weight: "400", style: "normal" },
@@ -19,12 +20,5 @@ export const basicSans = localFont({
     { path: "../fonts/BasicSansSF-Bold.ttf", weight: "700", style: "normal" },
   ],
   variable: "--font-basic-sans",
-  display: "swap",
-});
-
-export const poppins = Poppins({
-  subsets: ["latin"],
-  weight: ["700", "800"],
-  variable: "--font-poppins",
   display: "swap",
 });

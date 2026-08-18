@@ -130,6 +130,7 @@ export default async function InvestmentPage({
           label="Projeção para o mês"
           value={formatCurrencyBRL(projected)}
           hint={`${daysRemaining} dia(s) restante(s) no ritmo atual`}
+          highlight
         />
       </div>
 

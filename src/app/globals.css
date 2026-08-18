@@ -10,7 +10,6 @@
   --font-sans: var(--font-basic-sans);
   --font-mono: var(--font-basic-sans);
   --font-heading: var(--font-stinger);
-  --font-numeral: var(--font-poppins);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -49,9 +48,10 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* Brand: BuzzMeUp design system — see D:\BuzzMeUp - Claude\design-system */
+/* Brand: BuzzConnect (produto) design system — see C:\BuzzMeUp - Claude\buzzconnect
+   Laranja é reservado para ação/destaque, não fundo. Fundo neutro, cards brancos. */
 :root {
-  --background: #FFFFFF;
+  --background: #F1F0ED;
   --foreground: #3F3A39;
   --card: #FFFFFF;
   --card-foreground: #3F3A39;
@@ -62,10 +62,10 @@
   --secondary: #F1F0ED;
   --secondary-foreground: #3F3A39;
   --muted: #F1F0ED;
-  --muted-foreground: rgba(63, 58, 57, 0.7);
+  --muted-foreground: rgba(63, 58, 57, 0.65);
   --accent: #FBE8CB;
   --accent-foreground: #3F3A39;
-  --destructive: oklch(0.577 0.245 27.325);
+  --destructive: #E4574C;
   --border: #D8D3CC;
   --input: #D8D3CC;
   --ring: #F9A11B;
@@ -74,7 +74,7 @@
   --chart-3: #72C064;
   --chart-4: #C97B12;
   --chart-5: #4A2A6B;
-  --radius: 0.25rem;
+  --radius: 0.5rem;
   --sidebar: #F1F0ED;
   --sidebar-foreground: #3F3A39;
   --sidebar-primary: #F9A11B;
@@ -100,7 +100,7 @@
   --muted-foreground: rgba(241, 240, 237, 0.65);
   --accent: #4A3A22;
   --accent-foreground: #F1F0ED;
-  --destructive: oklch(0.704 0.191 22.216);
+  --destructive: #EB6F65;
   --border: rgba(255, 255, 255, 0.12);
   --input: rgba(255, 255, 255, 0.16);
   --ring: #FFB238;
@@ -132,10 +132,8 @@
 }
 
 @layer utilities {
+  /* Stinger only for page/tab titles — never on KPI values or tables. */
   .font-display {
     font-family: var(--font-stinger);
-  }
-  .font-numeral {
-    font-family: var(--font-poppins);
   }
 }

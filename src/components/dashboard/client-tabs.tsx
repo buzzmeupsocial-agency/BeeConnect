@@ -15,7 +15,7 @@ export function ClientTabs({ slug }: { slug: string }) {
   ];
 
   return (
-    <nav className="flex gap-1 border-b">
+    <nav className="flex flex-wrap gap-2">
       {tabs.map((tab) => {
         const active = pathname === tab.href;
         return (
@@ -23,10 +23,10 @@ export function ClientTabs({ slug }: { slug: string }) {
             key={tab.href}
             href={tab.href}
             className={cn(
-              "border-b-2 px-3 py-2 text-sm font-medium transition-colors",
+              "rounded-full px-4 py-2 text-sm font-bold transition-colors",
               active
-                ? "border-primary text-foreground"
-                : "border-transparent text-muted-foreground hover:text-foreground",
+                ? "bg-foreground text-background"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground",
             )}
           >
             {tab.label}

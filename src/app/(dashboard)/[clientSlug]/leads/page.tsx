@@ -81,6 +81,7 @@ export default async function LeadsPage({
             label="Projeção de leads"
             value={formatNumber(Math.round(leadsSeries.projected))}
             hint={`Até ${formatDateBR(daysInMonth)}`}
+            highlight
           />
         </div>
         <div className="rounded-xl border bg-card p-4">
@@ -105,6 +106,7 @@ export default async function LeadsPage({
             label="Projeção de compras"
             value={formatNumber(Math.round(purchasesSeries.projected))}
             hint={`Até ${formatDateBR(daysInMonth)}`}
+            highlight
           />
         </div>
         <div className="rounded-xl border bg-card p-4">
