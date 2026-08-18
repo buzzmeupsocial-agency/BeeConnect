@@ -1,4 +1,4 @@
-// Prisma schema — Dashboard Ratos
+// Prisma schema — BeeConnect
 // Prisma ORM v7: driver adapter required, connection URL lives in prisma.config.ts, not here.
 
 generator client {

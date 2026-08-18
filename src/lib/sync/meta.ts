@@ -41,12 +41,15 @@ function pickActionMoney(values: ActionEntry[] | undefined, candidates: string[]
   return 0;
 }
 
-async function fetchGraph<T>(path: string, params: Record<string, string>): Promise<T> {
-  const url = new URL(`${GRAPH_BASE}${path}`);
-  for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
-
+// Fetches an absolute, already-built Graph API URL as-is. Used both for the
+// first page (built from GRAPH_BASE + path + params) and for pagination
+// continuation (Meta's own `paging.next` links, followed verbatim — they
+// sometimes point at a newer API version than GRAPH_VERSION, and rebuilding
+// them from decomposed path+params risks double-encoding/duplicate-version
+// bugs, so we never reconstruct them).
+async function fetchGraphUrl<T>(url: string): Promise<T> {
   for (let attempt = 0; attempt < 4; attempt++) {
-    const res = await fetch(url.toString());
+    const res = await fetch(url);
     const json = await res.json();
 
     if (!res.ok || json.error) {
@@ -55,13 +58,17 @@ async function fetchGraph<T>(path: string, params: Record<string, string>): Prom
         await new Promise((r) => setTimeout(r, 60_000));
         continue;
       }
-      throw new Error(
-        `Meta Graph API error (${path}): ${json.error?.message ?? res.statusText}`,
-      );
+      throw new Error(`Meta Graph API error: ${json.error?.message ?? res.statusText}`);
     }
     return json as T;
   }
-  throw new Error(`Meta Graph API: esgotou tentativas em ${path}`);
+  throw new Error(`Meta Graph API: esgotou tentativas em ${url}`);
+}
+
+async function fetchGraph<T>(path: string, params: Record<string, string>): Promise<T> {
+  const url = new URL(`${GRAPH_BASE}${path}`);
+  for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
+  return fetchGraphUrl<T>(url.toString());
 }
 
 async function fetchAllPages<T>(
@@ -69,27 +76,15 @@ async function fetchAllPages<T>(
   params: Record<string, string>,
 ): Promise<T[]> {
   const results: T[] = [];
-  let next: { path: string; params: Record<string, string> } | null = { path, params };
+  const firstUrl = new URL(`${GRAPH_BASE}${path}`);
+  for (const [k, v] of Object.entries(params)) firstUrl.searchParams.set(k, v);
+
+  let next: string | null = firstUrl.toString();
 
   while (next) {
-    const json: { data: T[]; paging?: { next?: string } } = await fetchGraph(
-      next.path,
-      next.params,
-    );
+    const json: { data: T[]; paging?: { next?: string } } = await fetchGraphUrl(next);
     results.push(...json.data);
-
-    if (json.paging?.next) {
-      const nextUrl: URL = new URL(json.paging.next);
-      const nextParams: Record<string, string> = Object.fromEntries(
-        nextUrl.searchParams,
-      );
-      next = {
-        path: nextUrl.pathname.replace(`/${GRAPH_VERSION}`, ""),
-        params: nextParams,
-      };
-    } else {
-      next = null;
-    }
+    next = json.paging?.next ?? null;
   }
 
   return results;
@@ -185,7 +180,7 @@ export async function syncMetaForClient(params: {
       time_range: JSON.stringify({ since: sinceStr, until: untilStr }),
       fields: "campaign_id,spend,impressions,clicks,actions,action_values",
       access_token: token,
-      limit: "500",
+      limit: "100",
     },
   );
 
@@ -227,7 +222,7 @@ export async function syncMetaForClient(params: {
   const ads = await fetchAllPages<MetaAd>(`/${metaAdAccountId}/ads`, {
     fields: "id,name,campaign_id,creative{id,name,thumbnail_url}",
     access_token: token,
-    limit: "500",
+    limit: "100",
   });
 
   const creativeIdByAdId = new Map<string, string>();
@@ -270,7 +265,7 @@ export async function syncMetaForClient(params: {
     time_range: JSON.stringify({ since: sinceStr, until: untilStr }),
     fields: "ad_id,spend,impressions,clicks,actions,action_values",
     access_token: token,
-    limit: "500",
+    limit: "100",
   });
 
   for (const row of adInsights) {

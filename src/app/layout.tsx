@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Dashboard Ratos",
+  title: "BeeConnect",
   description: "Investimento, leads/compras, campanhas e criativos — Meta Ads e Google Ads",
 };
 

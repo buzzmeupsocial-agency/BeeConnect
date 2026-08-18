@@ -19,7 +19,7 @@ export default async function DashboardLayout({
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
           <div className="flex items-center gap-4">
             <Link href="/" className="font-semibold">
-              Dashboard Ratos
+              BeeConnect
             </Link>
             <ClientSwitcher clients={clients} />
           </div>

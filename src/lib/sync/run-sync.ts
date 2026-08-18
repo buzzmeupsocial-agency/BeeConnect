@@ -3,6 +3,23 @@ import { Platform, SyncStatus, type Client } from "@/generated/prisma/client";
 import { syncMetaForClient } from "@/lib/sync/meta";
 import { syncGoogleForClient } from "@/lib/sync/google";
 
+// Some SDKs (google-ads-api included) throw plain objects instead of Error
+// instances, which stringify to "[object Object]" — pull out whatever's
+// actually useful instead.
+function serializeError(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (typeof error === "object" && error !== null) {
+    const withMessage = error as { message?: unknown; errors?: unknown };
+    if (typeof withMessage.message === "string") return withMessage.message;
+    try {
+      return JSON.stringify(error);
+    } catch {
+      // falls through to String(error) below
+    }
+  }
+  return String(error);
+}
+
 // Re-pulls a trailing window (not just "yesterday") because both platforms
 // can adjust attribution/conversion counts retroactively for a few days.
 function trailingWindow(days: number) {
@@ -23,15 +40,12 @@ async function runOne(clientId: string, platform: Platform, fn: () => Promise<{ 
     });
     return { platform, status: "success" as const, recordsSynced };
   } catch (error) {
+    const message = serializeError(error);
     await prisma.syncRun.update({
       where: { id: run.id },
-      data: {
-        status: SyncStatus.ERROR,
-        finishedAt: new Date(),
-        error: error instanceof Error ? error.message : String(error),
-      },
+      data: { status: SyncStatus.ERROR, finishedAt: new Date(), error: message },
     });
-    return { platform, status: "error" as const, error: String(error) };
+    return { platform, status: "error" as const, error: message };
   }
 }
 

@@ -12,7 +12,7 @@ export default async function LoginPage({
     <div className="flex min-h-svh items-center justify-center bg-muted/30 p-4">
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle className="text-xl">Dashboard Ratos</CardTitle>
+          <CardTitle className="text-xl">BeeConnect</CardTitle>
           <p className="text-sm text-muted-foreground">
             Entre com seu email e senha
           </p>

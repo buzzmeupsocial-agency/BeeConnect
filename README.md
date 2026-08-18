@@ -1,4 +1,4 @@
-# Dashboard Ratos
+# BeeConnect
 
 Sistema interno de dashboards que integra Meta Ads e Google Ads: login por
 usuário, cada usuário vinculado a um ou mais clientes, e por cliente 4 telas —

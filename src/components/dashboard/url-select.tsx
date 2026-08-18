@@ -31,10 +31,12 @@ export function UrlSelect({
     router.push(`${pathname}?${params.toString()}`);
   }
 
+  const currentLabel = options.find((o) => o.value === value)?.label ?? value;
+
   return (
     <Select value={value} onValueChange={onChange}>
       <SelectTrigger className={className ?? "w-44"}>
-        <SelectValue />
+        <SelectValue>{currentLabel}</SelectValue>
       </SelectTrigger>
       <SelectContent>
         {options.map((o) => (
