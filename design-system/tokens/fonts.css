@@ -1,0 +1,7 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700;800&display=swap');
+
+@font-face { font-family: 'Stinger'; src: url('../fonts/StingerTrial-Heavy.ttf') format('truetype'); font-weight: 800; }
+@font-face { font-family: 'Stinger'; src: url('../fonts/StingerTrial-Bold.ttf') format('truetype'); font-weight: 700; }
+@font-face { font-family: 'Stinger'; src: url('../fonts/StingerTrial-Regular.ttf') format('truetype'); font-weight: 400; }
+@font-face { font-family: 'Basic Sans'; src: url('../fonts/BasicSansSF.ttf') format('truetype'); font-weight: 400; }
+@font-face { font-family: 'Basic Sans'; src: url('../fonts/BasicSansSF-Bold.ttf') format('truetype'); font-weight: 700; }

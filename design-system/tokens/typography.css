@@ -1,0 +1,16 @@
+:root {
+  --font-display: 'Stinger', sans-serif;      /* titles, headlines, destaques */
+  --font-body: 'Basic Sans', sans-serif;       /* corpo de texto, UI */
+  --font-numeral: 'Poppins', sans-serif;       /* números grandes de estatística */
+
+  --text-display-xl: 800 96px/1 var(--font-display);
+  --text-display-lg: 800 76px/1.08 var(--font-display);
+  --text-display-md: 800 64px/1.08 var(--font-display);
+  --text-display-sm: 800 44px/1.15 var(--font-display);
+  --text-body-lg: 400 36px/1.4 var(--font-body);
+  --text-body-md: 400 28px/1.4 var(--font-body);
+  --text-label: 700 20px/1.2 var(--font-body);
+  --text-eyebrow: 700 18px/1.2 var(--font-body);
+
+  --letter-spacing-eyebrow: 2px;
+}
