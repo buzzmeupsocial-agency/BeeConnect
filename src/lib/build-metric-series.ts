@@ -3,10 +3,9 @@ import { projectPace } from "@/lib/projections";
 import type { MetricPoint } from "@/components/charts/metric-chart";
 
 // Builds a daily chart series spanning the full period: solid bars for days
-// up to today (realizado), dashed/hollow bars for the remaining days
-// (projetado — ritmo dos últimos 7 dias, repetido por dia). Together the two
-// halves cover the whole period, so the bar sequence reads as one continuous
-// trajectory ending at the projected period total.
+// up to today (realizado), a dashed line for the projection (ritmo médio do
+// período, repetido por dia) picking up exactly where the bars end and
+// running through the rest of the period.
 export function buildMetricSeries(params: {
   from: Date;
   periodEnd: Date;
@@ -29,11 +28,21 @@ export function buildMetricSeries(params: {
   const data: MetricPoint[] = days.map((d) => {
     const key = isoDate(d);
     const isFuture = key > todayKey;
+    const value = valueByDate.get(key) ?? 0;
+
+    let projetado: number | null = null;
+    if (key === todayKey) {
+      // Bridge point so the dashed line starts exactly where the bars end.
+      projetado = value;
+    } else if (isFuture) {
+      projetado = dailyPace;
+    }
+
     return {
       date: key,
       label: formatDateBR(d),
-      value: isFuture ? dailyPace : (valueByDate.get(key) ?? 0),
-      isProjected: isFuture,
+      realizado: isFuture ? 0 : value,
+      projetado,
     };
   });
 
