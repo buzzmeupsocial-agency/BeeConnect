@@ -6,6 +6,12 @@ investimento (com projeção), leads/compras (com projeção), análise de
 campanhas, e criativos campeões. Os dados chegam via um sync diário (Meta +
 Google Ads) que salva snapshots no banco, não consulta ao vivo.
 
+Identidade visual aplicada a partir do design system da BuzzMeUp
+(`design-system/`, não versionado — ver `.gitignore`). O app fica em
+`C:\BuzzMeUp - Claude` — **importante: precisa estar num drive NTFS**. O
+Next.js (Turbopack e Webpack) cria junctions/symlinks durante o build, o que
+não funciona em drives exFAT/FAT32.
+
 Stack: Next.js 16 (App Router) + TypeScript + Tailwind + shadcn/ui, Postgres +
 Auth via Supabase, Prisma 7 (com driver adapter), gráficos com Recharts,
 deploy em Vercel com Vercel Cron pro sync.

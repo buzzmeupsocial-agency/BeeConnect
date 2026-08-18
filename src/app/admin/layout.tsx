@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { requireAdmin } from "@/lib/access-control";
 import { LogoutButton } from "@/components/dashboard/logout-button";
@@ -20,8 +21,9 @@ export default async function AdminLayout({
       <header className="border-b bg-background">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3">
           <div className="flex items-center gap-4">
-            <Link href="/" className="font-semibold">
-              BeeConnect
+            <Link href="/" className="flex items-center gap-2">
+              <Image src="/brand/logo-preto.png" alt="BuzzMeUp" width={24} height={24} className="size-6 object-contain" />
+              <span className="font-display text-lg font-bold">BeeConnect</span>
             </Link>
             <span className="text-sm text-muted-foreground">Admin</span>
           </div>

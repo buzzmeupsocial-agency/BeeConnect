@@ -13,7 +13,7 @@ export default async function ClientLayout({
 
   return (
     <div>
-      <h1 className="mb-4 text-2xl font-semibold">{client.name}</h1>
+      <h1 className="font-display mb-4 text-2xl font-bold">{client.name}</h1>
       <ClientTabs slug={client.slug} />
       <div className="pt-6">{children}</div>
     </div>
