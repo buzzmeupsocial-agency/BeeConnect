@@ -1,0 +1,12 @@
+:root {
+  --bc-font-display: 'Stinger', sans-serif;   /* títulos de página/aba — nunca em componentes pequenos */
+  --bc-font-body: 'Basic Sans', sans-serif;    /* corpo, labels, valores, tabelas */
+
+  --bc-text-page-title: 800 36px/1.15 var(--bc-font-display);
+  --bc-text-section-title: 700 20px/1.2 var(--bc-font-body);
+  --bc-text-kpi-value: 700 28px/1.1 var(--bc-font-body);
+  --bc-text-body: 400 15px/1.5 var(--bc-font-body);
+  --bc-text-eyebrow: 700 13px/1.2 var(--bc-font-body);
+
+  --bc-eyebrow-letter-spacing: 0.5px;
+}

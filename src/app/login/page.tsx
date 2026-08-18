@@ -10,13 +10,22 @@ export default async function LoginPage({
   const { redirectTo } = await searchParams;
 
   return (
-    <div className="flex min-h-svh items-center justify-center bg-muted/30 p-4">
+    <div
+      className="flex min-h-svh items-center justify-center p-4"
+      style={{
+        backgroundColor: "var(--color-secondary)",
+        backgroundImage:
+          "radial-gradient(circle at 1px 1px, rgba(63,58,57,0.08) 1px, transparent 0)",
+        backgroundSize: "14px 14px",
+      }}
+    >
       <Card className="w-full max-w-sm">
         <CardHeader>
           <div className="mb-1 flex items-center gap-2">
             <Image src="/brand/logo-preto.png" alt="BuzzMeUp" width={28} height={28} className="size-7 object-contain" />
             <CardTitle className="font-display text-xl">BeeConnect</CardTitle>
           </div>
+          <span className="mb-1 block h-[3px] w-10 bg-primary" />
           <p className="text-sm text-muted-foreground">
             Entre com seu email e senha
           </p>
