@@ -115,7 +115,8 @@ export default async function InvestmentPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <h2 className="font-display text-lg font-bold">Geral (Meta + Google)</h2>
+      <div className="-mt-2 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <StatTile
           label="Investido no mês"
           value={formatCurrencyBRL(realized)}
@@ -135,16 +136,9 @@ export default async function InvestmentPage({
       </div>
 
       {channels.map((c) => (
-        <div key={c.name} className="rounded-xl border bg-card p-4">
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <div className="flex flex-wrap items-baseline gap-3">
-              <h2 className="text-sm font-medium text-muted-foreground">{c.name}</h2>
-              <p className="text-xs text-muted-foreground">
-                Realizado: <span className="font-medium text-foreground">{formatCurrencyBRL(c.series.realized)}</span>
-                {" · "}Ritmo: <span className="font-medium text-foreground">{formatCurrencyBRL(c.series.dailyPace)}</span>/dia
-                {" · "}Projeção: <span className="font-medium text-foreground">{formatCurrencyBRL(c.series.projected)}</span>
-              </p>
-            </div>
+        <div key={c.name} className="flex flex-col gap-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="font-display text-lg font-bold">{c.name}</h2>
             <UrlSelect
               paramName={c.paramName}
               value={c.selectedId}
@@ -155,12 +149,34 @@ export default async function InvestmentPage({
               className="w-full sm:w-64"
             />
           </div>
-          <MetricChart
-            data={c.series.data}
-            seriesName={c.name}
-            color={c.color}
-            valueType="currency"
-          />
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <StatTile
+              label="Investido no mês"
+              value={formatCurrencyBRL(c.series.realized)}
+              hint={`Até ${formatDateBR(to)}`}
+            />
+            <StatTile
+              label="Ritmo diário (média do período)"
+              value={formatCurrencyBRL(c.series.dailyPace)}
+              hint="Montante realizado ÷ dias decorridos"
+            />
+            <StatTile
+              label="Projeção para o mês"
+              value={formatCurrencyBRL(c.series.projected)}
+              hint={`${daysRemaining} dia(s) restante(s) no ritmo atual`}
+              highlight
+            />
+          </div>
+
+          <div className="rounded-xl border bg-card p-4">
+            <MetricChart
+              data={c.series.data}
+              seriesName={c.name}
+              color={c.color}
+              valueType="currency"
+            />
+          </div>
         </div>
       ))}
     </div>
