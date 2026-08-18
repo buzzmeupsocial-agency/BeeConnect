@@ -1,10 +1,11 @@
-export type PeriodKey = "7d" | "14d" | "30d" | "month";
+export type PeriodKey = "7d" | "14d" | "30d" | "month" | "prev_month";
 
 export const PERIOD_OPTIONS: { value: PeriodKey; label: string }[] = [
   { value: "7d", label: "Últimos 7 dias" },
   { value: "14d", label: "Últimos 14 dias" },
   { value: "30d", label: "Últimos 30 dias" },
   { value: "month", label: "Mês atual" },
+  { value: "prev_month", label: "Mês anterior" },
 ];
 
 function utcDay(d: Date) {
@@ -14,7 +15,13 @@ function utcDay(d: Date) {
 }
 
 export function parsePeriod(value: string | undefined): PeriodKey {
-  if (value === "7d" || value === "14d" || value === "30d" || value === "month") {
+  if (
+    value === "7d" ||
+    value === "14d" ||
+    value === "30d" ||
+    value === "month" ||
+    value === "prev_month"
+  ) {
     return value;
   }
   return "30d";
@@ -23,19 +30,24 @@ export function parsePeriod(value: string | undefined): PeriodKey {
 // Range for ranking/analysis screens (Campanhas, Criativos) — always
 // finished ranges, no projection involved.
 export function getPeriodRange(period: PeriodKey): { from: Date; to: Date } {
-  const to = utcDay(new Date());
+  const today = utcDay(new Date());
   if (period === "month") {
-    const from = new Date(Date.UTC(to.getUTCFullYear(), to.getUTCMonth(), 1));
+    const from = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), 1));
+    return { from, to: today };
+  }
+  if (period === "prev_month") {
+    const from = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() - 1, 1));
+    const to = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), 0));
     return { from, to };
   }
   const days = period === "7d" ? 7 : period === "14d" ? 14 : 30;
-  const from = new Date(to);
+  const from = new Date(today);
   from.setUTCDate(from.getUTCDate() - (days - 1));
-  return { from, to };
+  return { from, to: today };
 }
 
-// Range for the current month to date, used by the Investimento and
-// Leads/Compras dashboards (they always project to end of this month).
+// Range for the current month to date, used by screens that project to the
+// end of the ongoing month.
 export function getCurrentMonthRange(): {
   from: Date;
   to: Date;
@@ -62,9 +74,10 @@ export function getCurrentMonthRange(): {
 }
 
 // Unified range for screens with projection (Investimento, Resultados):
-// "month" keeps the usual to-date-vs-rest-of-month split; the fixed trailing
-// windows (7d/14d/30d) are already fully elapsed, so daysRemaining is 0 and
-// the projection tiles/lines naturally collapse to "= realizado".
+// "month" keeps the usual to-date-vs-rest-of-month split; every other
+// option (fixed trailing windows and "mês anterior") is already fully
+// elapsed, so daysRemaining is 0 and the projection tiles/lines naturally
+// collapse to "= realizado".
 export function getAnalysisRange(period: PeriodKey): {
   from: Date;
   to: Date;

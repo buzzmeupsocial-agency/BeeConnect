@@ -1,6 +1,6 @@
 import { requireClientAccess } from "@/lib/access-control";
 import { prisma } from "@/lib/db";
-import { formatDateBR, getCurrentMonthRange, isoDate } from "@/lib/date-range";
+import { formatDateBR, getAnalysisRange, isoDate, parsePeriod, PERIOD_OPTIONS } from "@/lib/date-range";
 import { buildMetricSeries } from "@/lib/build-metric-series";
 import { getActiveCampaignsInPeriod } from "@/lib/queries";
 import { formatCurrencyBRL } from "@/lib/format";
@@ -14,11 +14,11 @@ async function loadChannel(params: {
   platform: Platform;
   from: Date;
   to: Date;
-  daysInMonth: Date;
+  periodEnd: Date;
   daysRemaining: number;
   selectedCampaignId: string;
 }) {
-  const { clientId, platform, from, to, daysInMonth, daysRemaining, selectedCampaignId } = params;
+  const { clientId, platform, from, to, periodEnd, daysRemaining, selectedCampaignId } = params;
 
   const metrics = await prisma.campaignDailyMetric.findMany({
     where: {
@@ -40,7 +40,7 @@ async function loadChannel(params: {
 
   return buildMetricSeries({
     from,
-    periodEnd: daysInMonth,
+    periodEnd,
     today: to,
     daysRemaining,
     valueByDate: byDate,
@@ -52,12 +52,15 @@ export default async function InvestmentPage({
   searchParams,
 }: {
   params: Promise<{ clientSlug: string }>;
-  searchParams: Promise<{ campaignMeta?: string; campaignGoogle?: string }>;
+  searchParams: Promise<{ period?: string; campaignMeta?: string; campaignGoogle?: string }>;
 }) {
   const { clientSlug } = await params;
-  const { campaignMeta, campaignGoogle } = await searchParams;
+  const { period: periodParam, campaignMeta, campaignGoogle } = await searchParams;
   const { client } = await requireClientAccess(clientSlug);
-  const { from, to, daysInMonth, daysRemaining } = getCurrentMonthRange();
+
+  const period = parsePeriod(periodParam);
+  const { from, to, periodEnd, daysRemaining } = getAnalysisRange(period);
+  const projectionHint = period === "month" ? `${daysRemaining} dia(s) restante(s) no ritmo atual` : "Período já encerrado";
 
   const [metaCampaigns, googleCampaigns] = await Promise.all([
     getActiveCampaignsInPeriod(client.id, from, to, Platform.META),
@@ -75,7 +78,7 @@ export default async function InvestmentPage({
       platform: Platform.META,
       from,
       to,
-      daysInMonth,
+      periodEnd,
       daysRemaining,
       selectedCampaignId: selectedMetaId,
     }),
@@ -84,7 +87,7 @@ export default async function InvestmentPage({
       platform: Platform.GOOGLE,
       from,
       to,
-      daysInMonth,
+      periodEnd,
       daysRemaining,
       selectedCampaignId: selectedGoogleId,
     }),
@@ -115,10 +118,12 @@ export default async function InvestmentPage({
 
   return (
     <div className="flex flex-col gap-6">
+      <UrlSelect paramName="period" value={period} options={PERIOD_OPTIONS} className="w-full sm:w-56" />
+
       <h2 className="font-display text-lg font-bold">Geral (Meta + Google)</h2>
       <div className="-mt-2 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <StatTile
-          label="Investido no mês"
+          label="Investido no período"
           value={formatCurrencyBRL(realized)}
           hint={`Meta + Google, até ${formatDateBR(to)}`}
         />
@@ -128,9 +133,9 @@ export default async function InvestmentPage({
           hint="Montante realizado ÷ dias decorridos"
         />
         <StatTile
-          label="Projeção para o mês"
+          label="Projeção do período"
           value={formatCurrencyBRL(projected)}
-          hint={`${daysRemaining} dia(s) restante(s) no ritmo atual`}
+          hint={projectionHint}
           highlight
         />
       </div>
@@ -152,7 +157,7 @@ export default async function InvestmentPage({
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <StatTile
-              label="Investido no mês"
+              label="Investido no período"
               value={formatCurrencyBRL(c.series.realized)}
               hint={`Até ${formatDateBR(to)}`}
             />
@@ -162,9 +167,9 @@ export default async function InvestmentPage({
               hint="Montante realizado ÷ dias decorridos"
             />
             <StatTile
-              label="Projeção para o mês"
+              label="Projeção do período"
               value={formatCurrencyBRL(c.series.projected)}
-              hint={`${daysRemaining} dia(s) restante(s) no ritmo atual`}
+              hint={projectionHint}
               highlight
             />
           </div>
