@@ -68,3 +68,14 @@ export function formatDateBR(d: Date): string {
 export function isoDate(d: Date): string {
   return d.toISOString().slice(0, 10);
 }
+
+export function eachDayUTC(from: Date, to: Date): Date[] {
+  const days: Date[] = [];
+  const cursor = utcDay(from);
+  const end = utcDay(to);
+  while (cursor.getTime() <= end.getTime()) {
+    days.push(new Date(cursor));
+    cursor.setUTCDate(cursor.getUTCDate() + 1);
+  }
+  return days;
+}
