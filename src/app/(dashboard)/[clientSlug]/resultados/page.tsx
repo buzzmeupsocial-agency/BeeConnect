@@ -97,9 +97,15 @@ export default async function ResultadosPage({
             Instagram, exige a permissão instagram_manage_insights no token).
           </p>
         </div>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
           <StatTile label="Investimento total" value={formatCurrencyBRL(organicoSpend.realized)} />
           <StatTile label="Ritmo diário" value={formatCurrencyBRL(organicoSpend.dailyPace)} hint="Investimento/dia" />
+          <StatTile
+            label="Projeção de investimento"
+            value={formatCurrencyBRL(organicoSpend.projected)}
+            hint={`Até ${formatDateBR(daysInMonth)}`}
+            highlight
+          />
           <StatTile label="Resultados no período" value={formatNumber(organicoResult.realized)} hint="Cliques no link" />
           <StatTile
             label="Projeção de resultados"
@@ -116,9 +122,15 @@ export default async function ResultadosPage({
       {/* Leads */}
       <section className="flex flex-col gap-4">
         <h2 className="font-display text-lg font-bold">Leads</h2>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
           <StatTile label="Investimento total" value={formatCurrencyBRL(leadsSpend.realized)} />
           <StatTile label="Ritmo diário" value={formatCurrencyBRL(leadsSpend.dailyPace)} hint="Investimento/dia" />
+          <StatTile
+            label="Projeção de investimento"
+            value={formatCurrencyBRL(leadsSpend.projected)}
+            hint={`Até ${formatDateBR(daysInMonth)}`}
+            highlight
+          />
           <StatTile label="Resultados no período" value={formatNumber(leadsResult.realized)} hint="Leads" />
           <StatTile
             label="Projeção de resultados"
@@ -135,14 +147,22 @@ export default async function ResultadosPage({
       {/* Compras */}
       <section className="flex flex-col gap-4">
         <h2 className="font-display text-lg font-bold">Compras</h2>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
           <StatTile label="Investimento total" value={formatCurrencyBRL(comprasSpend.realized)} />
           <StatTile label="Ritmo diário" value={formatCurrencyBRL(comprasSpend.dailyPace)} hint="Investimento/dia" />
+          <StatTile
+            label="Projeção de investimento"
+            value={formatCurrencyBRL(comprasSpend.projected)}
+            hint={`Até ${formatDateBR(daysInMonth)}`}
+            highlight
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
           <StatTile label="Compras no período" value={formatNumber(comprasResult.realized)} />
           <StatTile label="Vendas no período" value={formatCurrencyBRL(comprasRevenue.realized)} />
-        </div>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           <StatTile label="ROAS no período" value={formatRoas(comprasRoasRealized)} />
+        </div>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
           <StatTile
             label="Projeção de compras"
             value={formatNumber(Math.round(comprasResult.projected))}
