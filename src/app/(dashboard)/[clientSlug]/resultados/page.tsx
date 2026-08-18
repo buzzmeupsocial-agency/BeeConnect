@@ -1,23 +1,29 @@
 import { requireClientAccess } from "@/lib/access-control";
 import { prisma } from "@/lib/db";
-import { formatDateBR, getCurrentMonthRange, isoDate } from "@/lib/date-range";
+import { formatDateBR, getAnalysisRange, isoDate, parsePeriod, PERIOD_OPTIONS } from "@/lib/date-range";
 import { buildMetricSeries } from "@/lib/build-metric-series";
 import { isOrganicCampaign } from "@/lib/organic";
 import { formatCurrencyBRL, formatNumber, formatRoas } from "@/lib/format";
 import { StatTile } from "@/components/dashboard/stat-tile";
 import { MetricChart } from "@/components/charts/metric-chart";
+import { UrlSelect } from "@/components/dashboard/url-select";
 import { ResultType } from "@/generated/prisma/client";
 
 type Section = "organico" | "leads" | "compras";
 
 export default async function ResultadosPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ clientSlug: string }>;
+  searchParams: Promise<{ period?: string }>;
 }) {
   const { clientSlug } = await params;
+  const { period: periodParam } = await searchParams;
   const { client } = await requireClientAccess(clientSlug);
-  const { from, to, daysInMonth, daysRemaining } = getCurrentMonthRange();
+
+  const period = parsePeriod(periodParam);
+  const { from, to, periodEnd, daysRemaining } = getAnalysisRange(period);
 
   const campaigns = await prisma.campaign.findMany({
     where: { clientId: client.id },
@@ -70,7 +76,9 @@ export default async function ResultadosPage({
     }
   }
 
-  const seriesArgs = { from, periodEnd: daysInMonth, today: to, daysRemaining };
+  const seriesArgs = { from, periodEnd, today: to, daysRemaining };
+  const projectionHint =
+    period === "month" ? `Até ${formatDateBR(periodEnd)}` : "Período já encerrado";
 
   const organicoSpend = buildMetricSeries({ ...seriesArgs, valueByDate: spendByDate.organico });
   const organicoResult = buildMetricSeries({ ...seriesArgs, valueByDate: resultByDate.organico });
@@ -87,6 +95,8 @@ export default async function ResultadosPage({
 
   return (
     <div className="flex flex-col gap-10">
+      <UrlSelect paramName="period" value={period} options={PERIOD_OPTIONS} className="w-full sm:w-56" />
+
       {/* Orgânico */}
       <section className="flex flex-col gap-4">
         <div>
@@ -103,14 +113,14 @@ export default async function ResultadosPage({
           <StatTile
             label="Projeção de investimento"
             value={formatCurrencyBRL(organicoSpend.projected)}
-            hint={`Até ${formatDateBR(daysInMonth)}`}
+            hint={projectionHint}
             highlight
           />
           <StatTile label="Resultados no período" value={formatNumber(organicoResult.realized)} hint="Cliques no link" />
           <StatTile
             label="Projeção de resultados"
             value={formatNumber(Math.round(organicoResult.projected))}
-            hint={`Até ${formatDateBR(daysInMonth)}`}
+            hint={projectionHint}
             highlight
           />
         </div>
@@ -128,14 +138,14 @@ export default async function ResultadosPage({
           <StatTile
             label="Projeção de investimento"
             value={formatCurrencyBRL(leadsSpend.projected)}
-            hint={`Até ${formatDateBR(daysInMonth)}`}
+            hint={projectionHint}
             highlight
           />
           <StatTile label="Resultados no período" value={formatNumber(leadsResult.realized)} hint="Leads" />
           <StatTile
             label="Projeção de resultados"
             value={formatNumber(Math.round(leadsResult.projected))}
-            hint={`Até ${formatDateBR(daysInMonth)}`}
+            hint={projectionHint}
             highlight
           />
         </div>
@@ -153,7 +163,7 @@ export default async function ResultadosPage({
           <StatTile
             label="Projeção de investimento"
             value={formatCurrencyBRL(comprasSpend.projected)}
-            hint={`Até ${formatDateBR(daysInMonth)}`}
+            hint={projectionHint}
             highlight
           />
         </div>
@@ -166,13 +176,13 @@ export default async function ResultadosPage({
           <StatTile
             label="Projeção de compras"
             value={formatNumber(Math.round(comprasResult.projected))}
-            hint={`Até ${formatDateBR(daysInMonth)}`}
+            hint={projectionHint}
             highlight
           />
           <StatTile
             label="Projeção de vendas"
             value={formatCurrencyBRL(comprasRevenue.projected)}
-            hint={`Até ${formatDateBR(daysInMonth)}`}
+            hint={projectionHint}
             highlight
           />
           <StatTile label="ROAS projetado" value={formatRoas(comprasRoasProjected)} highlight />

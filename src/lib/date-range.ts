@@ -61,6 +61,24 @@ export function getCurrentMonthRange(): {
   };
 }
 
+// Unified range for screens with projection (Investimento, Resultados):
+// "month" keeps the usual to-date-vs-rest-of-month split; the fixed trailing
+// windows (7d/14d/30d) are already fully elapsed, so daysRemaining is 0 and
+// the projection tiles/lines naturally collapse to "= realizado".
+export function getAnalysisRange(period: PeriodKey): {
+  from: Date;
+  to: Date;
+  periodEnd: Date;
+  daysRemaining: number;
+} {
+  if (period === "month") {
+    const { from, to, daysInMonth, daysRemaining } = getCurrentMonthRange();
+    return { from, to, periodEnd: daysInMonth, daysRemaining };
+  }
+  const { from, to } = getPeriodRange(period);
+  return { from, to, periodEnd: to, daysRemaining: 0 };
+}
+
 export function formatDateBR(d: Date): string {
   return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
 }
