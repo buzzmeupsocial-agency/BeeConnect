@@ -41,7 +41,7 @@ export default async function LeadsPage({
     }
   }
 
-  const seriesArgs = { from, monthEnd: daysInMonth, today: to, daysRemaining };
+  const seriesArgs = { from, periodEnd: daysInMonth, today: to, daysRemaining };
   const leadsSeries = buildMetricSeries({ ...seriesArgs, valueByDate: leadsByDate });
   const purchasesSeries = buildMetricSeries({ ...seriesArgs, valueByDate: purchasesByDate });
 

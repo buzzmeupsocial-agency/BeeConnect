@@ -1,10 +1,10 @@
 import { requireClientAccess } from "@/lib/access-control";
 import { prisma } from "@/lib/db";
-import { eachDayUTC, formatDateBR, getCurrentMonthRange, isoDate } from "@/lib/date-range";
-import { projectPace } from "@/lib/projections";
+import { formatDateBR, getCurrentMonthRange, isoDate } from "@/lib/date-range";
+import { buildMetricSeries } from "@/lib/build-metric-series";
 import { formatCurrencyBRL } from "@/lib/format";
 import { StatTile } from "@/components/dashboard/stat-tile";
-import { InvestmentChart, type InvestmentPoint } from "@/components/charts/investment-chart";
+import { MetricChart } from "@/components/charts/metric-chart";
 import { Platform } from "@/generated/prisma/client";
 
 export default async function InvestmentPage({
@@ -28,52 +28,27 @@ export default async function InvestmentPage({
     },
   });
 
-  const byDate = new Map<string, { meta: number; google: number }>();
+  const metaByDate = new Map<string, number>();
+  const googleByDate = new Map<string, number>();
   for (const m of metrics) {
     const key = isoDate(m.date);
-    const bucket = byDate.get(key) ?? { meta: 0, google: 0 };
     const spend = Number(m.spend);
-    if (m.campaign.platform === Platform.META) bucket.meta += spend;
-    else bucket.google += spend;
-    byDate.set(key, bucket);
+    const bucket = m.campaign.platform === Platform.META ? metaByDate : googleByDate;
+    bucket.set(key, (bucket.get(key) ?? 0) + spend);
   }
 
-  // Chart spans the whole month (realized days + the days still ahead) so
-  // the projection line visibly reaches the end of the month.
-  const monthDays = eachDayUTC(from, daysInMonth);
-  const todayKey = isoDate(to);
+  const seriesArgs = { from, periodEnd: daysInMonth, today: to, daysRemaining };
+  const metaSeries = buildMetricSeries({ ...seriesArgs, valueByDate: metaByDate });
+  const googleSeries = buildMetricSeries({ ...seriesArgs, valueByDate: googleByDate });
 
-  const realizedTotals: number[] = [];
-  for (const d of monthDays) {
-    const key = isoDate(d);
-    if (key > todayKey) break;
-    const bucket = byDate.get(key) ?? { meta: 0, google: 0 };
-    realizedTotals.push(bucket.meta + bucket.google);
-  }
-  const { realized, projected, dailyPace } = projectPace(realizedTotals, daysRemaining);
+  const realized = metaSeries.realized + googleSeries.realized;
+  const dailyPace = metaSeries.dailyPace + googleSeries.dailyPace;
+  const projected = metaSeries.projected + googleSeries.projected;
 
-  const data: InvestmentPoint[] = monthDays.map((d) => {
-    const key = isoDate(d);
-    const isFuture = key > todayKey;
-    const bucket = byDate.get(key) ?? { meta: 0, google: 0 };
-
-    let projecao: number | null = null;
-    if (key === todayKey) {
-      // Bridge point: today's realized total, so the dashed line starts
-      // exactly where the solid bars end.
-      projecao = bucket.meta + bucket.google;
-    } else if (isFuture) {
-      projecao = dailyPace;
-    }
-
-    return {
-      date: key,
-      label: formatDateBR(d),
-      meta: isFuture ? 0 : bucket.meta,
-      google: isFuture ? 0 : bucket.google,
-      projecao,
-    };
-  });
+  const channels = [
+    { name: "Meta Ads", series: metaSeries, color: "var(--color-chart-1)" },
+    { name: "Google Ads", series: googleSeries, color: "var(--color-chart-2)" },
+  ];
 
   return (
     <div className="flex flex-col gap-6">
@@ -94,12 +69,25 @@ export default async function InvestmentPage({
           hint={`${daysRemaining} dia(s) restante(s) no ritmo atual`}
         />
       </div>
-      <div className="rounded-xl border bg-card p-4">
-        <h2 className="mb-4 text-sm font-medium text-muted-foreground">
-          Investimento diário — Meta Ads vs Google Ads
-        </h2>
-        <InvestmentChart data={data} />
-      </div>
+
+      {channels.map((c) => (
+        <div key={c.name} className="rounded-xl border bg-card p-4">
+          <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="text-sm font-medium text-muted-foreground">{c.name}</h2>
+            <p className="text-xs text-muted-foreground">
+              Realizado: <span className="font-medium text-foreground">{formatCurrencyBRL(c.series.realized)}</span>
+              {" · "}Ritmo: <span className="font-medium text-foreground">{formatCurrencyBRL(c.series.dailyPace)}</span>/dia
+              {" · "}Projeção: <span className="font-medium text-foreground">{formatCurrencyBRL(c.series.projected)}</span>
+            </p>
+          </div>
+          <MetricChart
+            data={c.series.data}
+            seriesName={c.name}
+            color={c.color}
+            valueType="currency"
+          />
+        </div>
+      ))}
     </div>
   );
 }
