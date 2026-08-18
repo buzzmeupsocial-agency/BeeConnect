@@ -104,13 +104,6 @@ export function MetricChart({
             tick={{ fill: "var(--color-muted-foreground)", fontSize: 12 }}
             tickFormatter={valueFormatter}
             width={56}
-            label={{
-              value: `${seriesName} (dia)`,
-              angle: -90,
-              position: "insideLeft",
-              fill: "var(--color-muted-foreground)",
-              fontSize: 11,
-            }}
           />
           <YAxis
             yAxisId="acumulado"
@@ -120,13 +113,6 @@ export function MetricChart({
             tick={{ fill: "var(--color-muted-foreground)", fontSize: 12 }}
             tickFormatter={valueFormatter}
             width={64}
-            label={{
-              value: "Acumulado",
-              angle: 90,
-              position: "insideRight",
-              fill: "var(--color-muted-foreground)",
-              fontSize: 11,
-            }}
           />
           <Tooltip content={<ChartTooltip valueFormatter={valueFormatter} />} />
           <Bar
