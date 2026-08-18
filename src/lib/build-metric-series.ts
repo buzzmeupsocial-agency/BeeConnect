@@ -2,10 +2,12 @@ import { eachDayUTC, formatDateBR, isoDate } from "@/lib/date-range";
 import { projectPace } from "@/lib/projections";
 import type { MetricPoint } from "@/components/charts/metric-chart";
 
-// Builds a daily chart series spanning the full period: solid bars for days
-// up to today (realizado), a dashed line for the projection (ritmo médio do
-// período, repetido por dia) picking up exactly where the bars end and
-// running through the rest of the period.
+// Builds a daily chart series spanning the full period with 3 layers:
+// - daily: solid bars, gasto/resultado do dia (só dias já realizados)
+// - cumulative: linha contínua com o acumulado real até hoje
+// - cumulativeProjected: linha pontilhada, começando exatamente onde o
+//   acumulado real parou e crescendo pelo ritmo médio do período até o
+//   total projetado no fim do período.
 export function buildMetricSeries(params: {
   from: Date;
   periodEnd: Date;
@@ -25,24 +27,32 @@ export function buildMetricSeries(params: {
   }
   const { realized, projected, dailyPace } = projectPace(realizedSeries, daysRemaining);
 
+  let runningTotal = 0;
+  let daysPastToday = 0;
+
   const data: MetricPoint[] = days.map((d) => {
     const key = isoDate(d);
     const isFuture = key > todayKey;
-    const value = valueByDate.get(key) ?? 0;
 
-    let projetado: number | null = null;
+    if (!isFuture) {
+      runningTotal += valueByDate.get(key) ?? 0;
+    }
+
+    let cumulativeProjected: number | null = null;
     if (key === todayKey) {
-      // Bridge point so the dashed line starts exactly where the bars end.
-      projetado = value;
+      // Bridge point so the dashed line starts exactly where the solid line ends.
+      cumulativeProjected = runningTotal;
     } else if (isFuture) {
-      projetado = dailyPace;
+      daysPastToday += 1;
+      cumulativeProjected = runningTotal + dailyPace * daysPastToday;
     }
 
     return {
       date: key,
       label: formatDateBR(d),
-      realizado: isFuture ? 0 : value,
-      projetado,
+      daily: isFuture ? 0 : (valueByDate.get(key) ?? 0),
+      cumulative: isFuture ? null : runningTotal,
+      cumulativeProjected,
     };
   });
 

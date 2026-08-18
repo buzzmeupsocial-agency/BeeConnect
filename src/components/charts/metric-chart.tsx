@@ -16,8 +16,9 @@ import { formatCurrencyBRL, formatNumber } from "@/lib/format";
 export type MetricPoint = {
   date: string;
   label: string;
-  realizado: number;
-  projetado: number | null;
+  daily: number;
+  cumulative: number | null;
+  cumulativeProjected: number | null;
 };
 
 // A function prop can't cross the server/client boundary, so callers pass a
@@ -40,7 +41,7 @@ function ChartTooltip({
   valueFormatter: (v: number) => string;
 }) {
   if (!active || !payload?.length) return null;
-  const entries = payload.filter((p) => p.value > 0);
+  const entries = payload.filter((p) => p.value != null);
   if (!entries.length) return null;
   return (
     <div className="rounded-lg border bg-popover px-3 py-2 text-sm shadow-md">
@@ -68,7 +69,7 @@ export function MetricChart({
   const valueFormatter = formatterFor(valueType);
 
   return (
-    <ResponsiveContainer width="100%" height={280}>
+    <ResponsiveContainer width="100%" height={300}>
       <ComposedChart data={data} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
         <CartesianGrid vertical={false} stroke="var(--color-border)" />
         <XAxis
@@ -79,18 +80,60 @@ export function MetricChart({
           interval="preserveStartEnd"
         />
         <YAxis
+          yAxisId="daily"
           tickLine={false}
           axisLine={false}
           tick={{ fill: "var(--color-muted-foreground)", fontSize: 12 }}
           tickFormatter={valueFormatter}
           width={56}
+          label={{
+            value: `${seriesName} (dia)`,
+            angle: -90,
+            position: "insideLeft",
+            fill: "var(--color-muted-foreground)",
+            fontSize: 11,
+          }}
+        />
+        <YAxis
+          yAxisId="acumulado"
+          orientation="right"
+          tickLine={false}
+          axisLine={false}
+          tick={{ fill: "var(--color-muted-foreground)", fontSize: 12 }}
+          tickFormatter={valueFormatter}
+          width={64}
+          label={{
+            value: "Acumulado",
+            angle: 90,
+            position: "insideRight",
+            fill: "var(--color-muted-foreground)",
+            fontSize: 11,
+          }}
         />
         <Tooltip content={<ChartTooltip valueFormatter={valueFormatter} />} />
         <Legend wrapperStyle={{ fontSize: 12 }} />
-        <Bar dataKey="realizado" name={seriesName} fill={color} radius={[3, 3, 0, 0]} maxBarSize={28} />
+        <Bar
+          yAxisId="daily"
+          dataKey="daily"
+          name={`${seriesName} (dia)`}
+          fill={color}
+          fillOpacity={0.35}
+          radius={[3, 3, 0, 0]}
+          maxBarSize={28}
+        />
         <Line
-          dataKey="projetado"
-          name="Projeção"
+          yAxisId="acumulado"
+          dataKey="cumulative"
+          name="Acumulado"
+          stroke={color}
+          strokeWidth={2.5}
+          dot={false}
+          isAnimationActive={false}
+        />
+        <Line
+          yAxisId="acumulado"
+          dataKey="cumulativeProjected"
+          name="Projeção acumulada"
           stroke={color}
           strokeWidth={2}
           strokeDasharray="4 4"
