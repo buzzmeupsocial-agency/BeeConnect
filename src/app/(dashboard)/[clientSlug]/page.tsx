@@ -5,20 +5,39 @@ import { buildMetricSeries } from "@/lib/build-metric-series";
 import { formatCurrencyBRL } from "@/lib/format";
 import { StatTile } from "@/components/dashboard/stat-tile";
 import { MetricChart } from "@/components/charts/metric-chart";
+import { UrlSelect } from "@/components/dashboard/url-select";
 import { Platform } from "@/generated/prisma/client";
 
 export default async function InvestmentPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ clientSlug: string }>;
+  searchParams: Promise<{ campaign?: string }>;
 }) {
   const { clientSlug } = await params;
+  const { campaign: campaignParam } = await searchParams;
   const { client } = await requireClientAccess(clientSlug);
   const { from, to, daysInMonth, daysRemaining } = getCurrentMonthRange();
 
+  const campaigns = await prisma.campaign.findMany({
+    where: { clientId: client.id },
+    select: { id: true, name: true },
+    orderBy: { name: "asc" },
+  });
+  const selectedCampaignId =
+    campaignParam && campaigns.some((c) => c.id === campaignParam) ? campaignParam : "all";
+  const campaignOptions = [
+    { value: "all", label: "Todas as campanhas" },
+    ...campaigns.map((c) => ({ value: c.id, label: c.name })),
+  ];
+
   const metrics = await prisma.campaignDailyMetric.findMany({
     where: {
-      campaign: { clientId: client.id },
+      campaign: {
+        clientId: client.id,
+        ...(selectedCampaignId !== "all" ? { id: selectedCampaignId } : {}),
+      },
       date: { gte: from, lte: to },
     },
     select: {
@@ -52,6 +71,13 @@ export default async function InvestmentPage({
 
   return (
     <div className="flex flex-col gap-6">
+      <UrlSelect
+        paramName="campaign"
+        value={selectedCampaignId}
+        options={campaignOptions}
+        className="w-full sm:w-72"
+      />
+
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <StatTile
           label="Investido no mês"
@@ -59,9 +85,9 @@ export default async function InvestmentPage({
           hint={`Meta + Google, até ${formatDateBR(to)}`}
         />
         <StatTile
-          label="Ritmo diário (últimos 7 dias)"
+          label="Ritmo diário (média do período)"
           value={formatCurrencyBRL(dailyPace)}
-          hint="Média diária usada na projeção"
+          hint="Montante realizado ÷ dias decorridos"
         />
         <StatTile
           label="Projeção para o mês"

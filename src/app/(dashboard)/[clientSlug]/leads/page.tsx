@@ -5,20 +5,39 @@ import { buildMetricSeries } from "@/lib/build-metric-series";
 import { formatNumber } from "@/lib/format";
 import { StatTile } from "@/components/dashboard/stat-tile";
 import { MetricChart } from "@/components/charts/metric-chart";
+import { UrlSelect } from "@/components/dashboard/url-select";
 import { ResultType } from "@/generated/prisma/client";
 
 export default async function LeadsPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ clientSlug: string }>;
+  searchParams: Promise<{ campaign?: string }>;
 }) {
   const { clientSlug } = await params;
+  const { campaign: campaignParam } = await searchParams;
   const { client } = await requireClientAccess(clientSlug);
   const { from, to, daysInMonth, daysRemaining } = getCurrentMonthRange();
 
+  const campaigns = await prisma.campaign.findMany({
+    where: { clientId: client.id },
+    select: { id: true, name: true },
+    orderBy: { name: "asc" },
+  });
+  const selectedCampaignId =
+    campaignParam && campaigns.some((c) => c.id === campaignParam) ? campaignParam : "all";
+  const campaignOptions = [
+    { value: "all", label: "Todas as campanhas" },
+    ...campaigns.map((c) => ({ value: c.id, label: c.name })),
+  ];
+
   const metrics = await prisma.campaignDailyMetric.findMany({
     where: {
-      campaign: { clientId: client.id },
+      campaign: {
+        clientId: client.id,
+        ...(selectedCampaignId !== "all" ? { id: selectedCampaignId } : {}),
+      },
       date: { gte: from, lte: to },
     },
     select: {
@@ -47,11 +66,18 @@ export default async function LeadsPage({
 
   return (
     <div className="flex flex-col gap-8">
+      <UrlSelect
+        paramName="campaign"
+        value={selectedCampaignId}
+        options={campaignOptions}
+        className="w-full sm:w-72"
+      />
+
       <section className="flex flex-col gap-4">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <StatTile label="Leads no mês" value={formatNumber(Math.round(leadsSeries.realized))} />
           <StatTile
-            label="Ritmo diário (7 dias)"
+            label="Ritmo diário (média do período)"
             value={formatNumber(Math.round(leadsSeries.dailyPace))}
           />
           <StatTile
@@ -75,7 +101,7 @@ export default async function LeadsPage({
             value={formatNumber(Math.round(purchasesSeries.realized))}
           />
           <StatTile
-            label="Ritmo diário (7 dias)"
+            label="Ritmo diário (média do período)"
             value={formatNumber(Math.round(purchasesSeries.dailyPace))}
           />
           <StatTile
