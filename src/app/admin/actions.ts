@@ -38,7 +38,10 @@ export async function inviteUser(formData: FormData) {
   if (!email) throw new Error("Email é obrigatório");
 
   const admin = createAdminClient();
-  const { error } = await admin.auth.admin.inviteUserByEmail(email);
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const { error } = await admin.auth.admin.inviteUserByEmail(email, {
+    redirectTo: `${siteUrl}/auth/callback`,
+  });
   if (error) throw new Error(error.message);
 
   revalidatePath("/admin/usuarios");

@@ -100,6 +100,26 @@ manualmente contra Meta Ads e Google Ads.
    npx prisma migrate deploy
    ```
 
+## Colocar no seu domínio
+
+Depois do deploy na Vercel (passo acima), pra acessar por `app.seudominio.com.br`
+em vez do endereço `*.vercel.app`:
+
+1. No painel da Vercel, abra o projeto → **Settings → Domains** → adicione o
+   domínio/subdomínio desejado (ex: `app.buzzmeup.com.br`).
+2. A Vercel mostra um registro DNS pra criar (geralmente um **CNAME** apontando
+   pra `cname.vercel-dns.com`, ou um **A record** se for o domínio raiz). Crie
+   esse registro no painel onde o domínio foi comprado (Registro.br, GoDaddy,
+   Cloudflare, etc.) — a Vercel confirma automaticamente quando propaga
+   (pode levar de minutos a algumas horas).
+3. Atualize `NEXT_PUBLIC_SITE_URL` nas env vars da Vercel para a URL final
+   (ex: `https://app.buzzmeup.com.br`) e refaça o deploy — essa variável é
+   usada nos links de convite de novos usuários.
+4. No painel do Supabase, em **Authentication → URL Configuration**, defina o
+   **Site URL** para a mesma URL final e adicione ela (com `/auth/callback`)
+   em **Redirect URLs** — sem isso, os links de convite/login continuam
+   redirecionando para o domínio antigo.
+
 ## Comandos úteis
 
 | Comando | O que faz |
