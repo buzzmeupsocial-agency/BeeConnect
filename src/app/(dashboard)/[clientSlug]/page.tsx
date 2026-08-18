@@ -2,6 +2,7 @@ import { requireClientAccess } from "@/lib/access-control";
 import { prisma } from "@/lib/db";
 import { formatDateBR, getCurrentMonthRange, isoDate } from "@/lib/date-range";
 import { buildMetricSeries } from "@/lib/build-metric-series";
+import { getActiveCampaignsInPeriod } from "@/lib/queries";
 import { formatCurrencyBRL } from "@/lib/format";
 import { StatTile } from "@/components/dashboard/stat-tile";
 import { MetricChart } from "@/components/charts/metric-chart";
@@ -20,11 +21,7 @@ export default async function InvestmentPage({
   const { client } = await requireClientAccess(clientSlug);
   const { from, to, daysInMonth, daysRemaining } = getCurrentMonthRange();
 
-  const campaigns = await prisma.campaign.findMany({
-    where: { clientId: client.id },
-    select: { id: true, name: true },
-    orderBy: { name: "asc" },
-  });
+  const campaigns = await getActiveCampaignsInPeriod(client.id, from, to);
   const selectedCampaignId =
     campaignParam && campaigns.some((c) => c.id === campaignParam) ? campaignParam : "all";
   const campaignOptions = [
