@@ -34,9 +34,12 @@ export default async function DashboardLayout({
                 Admin
               </Link>
             )}
-            <span className="text-sm text-muted-foreground">
+            <Link
+              href="/conta"
+              className="text-sm text-muted-foreground hover:text-foreground"
+            >
               {profile.email}
-            </span>
+            </Link>
             <LogoutButton />
           </div>
         </div>

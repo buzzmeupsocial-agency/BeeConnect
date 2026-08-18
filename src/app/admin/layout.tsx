@@ -31,6 +31,9 @@ export default async function AdminLayout({
             <Link href="/" className="text-sm text-muted-foreground hover:text-foreground">
               Voltar aos dashboards
             </Link>
+            <Link href="/conta" className="text-sm text-muted-foreground hover:text-foreground">
+              Minha conta
+            </Link>
             <LogoutButton />
           </div>
         </div>
