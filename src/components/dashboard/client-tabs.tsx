@@ -9,7 +9,7 @@ export function ClientTabs({ slug }: { slug: string }) {
 
   const tabs = [
     { href: `/${slug}`, label: "Investimento" },
-    { href: `/${slug}/leads`, label: "Leads e Compras" },
+    { href: `/${slug}/resultados`, label: "Resultados" },
     { href: `/${slug}/campanhas`, label: "Campanhas" },
     { href: `/${slug}/criativos`, label: "Criativos campeões" },
   ];
