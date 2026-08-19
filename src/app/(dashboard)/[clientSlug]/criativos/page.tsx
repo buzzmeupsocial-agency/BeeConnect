@@ -71,13 +71,33 @@ export default async function CriativosPage({
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {rows.map((r, i) => (
             <Card key={r.id} className="overflow-hidden py-0">
-              <div className="relative aspect-[4/5] w-full bg-muted">
-                <iframe
-                  src={`/api/media/meta-preview/${r.id}`}
-                  loading="lazy"
-                  allow="autoplay; encrypted-media"
-                  className="size-full border-0"
-                />
+              {/*
+                Meta's ad preview page isn't fluid — it's laid out for the
+                fixed MOBILE_FEED_STANDARD viewport (335x450), the size Meta
+                itself declares for this format. Squeezing that same iframe
+                into a narrower box makes the page reflow to more text wraps
+                and need an internal scrollbar. Instead we render it at that
+                exact reference size and scale the whole box down via a CSS
+                container-query transform, so the layout — and the "fits
+                without scrolling" property — stays identical no matter how
+                wide the grid column ends up being.
+              */}
+              <div className="relative">
+                <div className="relative aspect-[335/450] w-full overflow-hidden bg-muted [container-type:inline-size]">
+                  <iframe
+                    src={`/api/media/meta-preview/${r.id}`}
+                    loading="lazy"
+                    scrolling="no"
+                    allow="autoplay; encrypted-media"
+                    style={{
+                      width: 335,
+                      height: 450,
+                      border: 0,
+                      transformOrigin: "top left",
+                      transform: "scale(calc(100cqi / 335px))",
+                    }}
+                  />
+                </div>
                 {i < 3 && (
                   <Badge className="absolute left-2 top-2" variant="default">
                     #{i + 1}
