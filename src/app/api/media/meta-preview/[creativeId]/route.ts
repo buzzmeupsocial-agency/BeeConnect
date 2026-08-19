@@ -2,14 +2,14 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { createClient } from "@/lib/supabase/server";
 
-// Ad videos are almost always unpublished "dark posts" (never shown on the
-// Page timeline), so the Video node's `source` field comes back empty even
-// with full ads_management permission, and the public FB video plugin embed
-// 404s on them ("vídeo indisponível"). The one endpoint that actually works
-// for previewing your own dark-post ad creative is the Ad Creative Preview
-// API (`/{creativeId}/previews`) — it returns a signed, time-limited iframe
-// URL that renders the ad (video included) with no viewer login required.
-// We never cache that URL — it expires — so this route re-resolves a fresh
+// Ad creatives (image or video) are almost always unpublished "dark posts"
+// (never shown on the Page timeline), so raw asset URLs (Video.source,
+// AdImage.url) either come back empty or require permissions beyond
+// ads_management. The one endpoint that actually works for previewing your
+// own dark-post ad — image or video alike — is the Ad Creative Preview API
+// (`/{creativeId}/previews`): it returns a signed, time-limited iframe URL
+// that renders the ad exactly as it runs, no viewer login required. We
+// never cache that URL — it expires — so this route re-resolves a fresh
 // one on every load and redirects the <iframe> straight to it.
 export const dynamic = "force-dynamic";
 
@@ -29,9 +29,7 @@ export async function GET(
   if (!profile) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
   const creative = await prisma.creative.findUnique({ where: { id: creativeId } });
-  if (!creative || !creative.videoId) {
-    return NextResponse.json({ error: "vídeo não encontrado" }, { status: 404 });
-  }
+  if (!creative) return NextResponse.json({ error: "criativo não encontrado" }, { status: 404 });
 
   if (!profile.isAdmin) {
     const access = await prisma.userClientAccess.findUnique({

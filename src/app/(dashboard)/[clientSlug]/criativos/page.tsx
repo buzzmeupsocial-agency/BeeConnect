@@ -1,4 +1,3 @@
-import { ImageOff } from "lucide-react";
 import { requireClientAccess } from "@/lib/access-control";
 import { prisma } from "@/lib/db";
 import { getPeriodRange, parsePeriod, PERIOD_OPTIONS } from "@/lib/date-range";
@@ -49,8 +48,6 @@ export default async function CriativosPage({
         id: cr.id,
         name: cr.name ?? "Sem nome",
         campaignName: cr.campaign?.name,
-        thumbnailUrl: cr.thumbnailUrl,
-        videoId: cr.videoId,
         spend,
         purchases,
         roas,
@@ -74,27 +71,13 @@ export default async function CriativosPage({
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {rows.map((r, i) => (
             <Card key={r.id} className="overflow-hidden py-0">
-              <div className="relative aspect-square w-full bg-muted">
-                {r.videoId ? (
-                  <iframe
-                    src={`/api/media/meta-video/${r.id}`}
-                    loading="lazy"
-                    allow="autoplay; encrypted-media"
-                    className="size-full border-0"
-                  />
-                ) : r.thumbnailUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={r.thumbnailUrl}
-                    alt={r.name}
-                    loading="lazy"
-                    className="size-full object-cover"
-                  />
-                ) : (
-                  <div className="flex size-full items-center justify-center text-muted-foreground">
-                    <ImageOff className="size-8" />
-                  </div>
-                )}
+              <div className="relative aspect-[4/5] w-full bg-muted">
+                <iframe
+                  src={`/api/media/meta-preview/${r.id}`}
+                  loading="lazy"
+                  allow="autoplay; encrypted-media"
+                  className="size-full border-0"
+                />
                 {i < 3 && (
                   <Badge className="absolute left-2 top-2" variant="default">
                     #{i + 1}
