@@ -50,6 +50,7 @@ export default async function CriativosPage({
         name: cr.name ?? "Sem nome",
         campaignName: cr.campaign?.name,
         thumbnailUrl: cr.thumbnailUrl,
+        videoId: cr.videoId,
         spend,
         purchases,
         roas,
@@ -74,7 +75,14 @@ export default async function CriativosPage({
           {rows.map((r, i) => (
             <Card key={r.id} className="overflow-hidden py-0">
               <div className="relative aspect-square w-full bg-muted">
-                {r.thumbnailUrl ? (
+                {r.videoId ? (
+                  <iframe
+                    src={`/api/media/meta-video/${r.id}`}
+                    loading="lazy"
+                    allow="autoplay; encrypted-media"
+                    className="size-full border-0"
+                  />
+                ) : r.thumbnailUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={r.thumbnailUrl}

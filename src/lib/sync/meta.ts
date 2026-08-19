@@ -111,7 +111,13 @@ type MetaAd = {
   id: string;
   name: string;
   campaign_id: string;
-  creative?: { id: string; name?: string; thumbnail_url?: string };
+  creative?: {
+    id: string;
+    name?: string;
+    thumbnail_url?: string;
+    video_id?: string;
+    object_story_spec?: { video_data?: { video_id?: string } };
+  };
 };
 
 type MetaAdInsight = {
@@ -218,9 +224,10 @@ export async function syncMetaForClient(params: {
     recordsSynced++;
   }
 
-  // 3. Ads + creatives (thumbnail via field expansion) → Creative.
+  // 3. Ads + creatives (thumbnail + video id via field expansion) → Creative.
   const ads = await fetchAllPages<MetaAd>(`/${metaAdAccountId}/ads`, {
-    fields: "id,name,campaign_id,creative{id,name,thumbnail_url}",
+    fields:
+      "id,name,campaign_id,creative{id,name,thumbnail_url,video_id,object_story_spec{video_data{video_id}}}",
     access_token: token,
     limit: "100",
   });
@@ -229,6 +236,7 @@ export async function syncMetaForClient(params: {
   for (const ad of ads) {
     if (!ad.creative) continue;
     const campaignId = campaignIdByExternal.get(ad.campaign_id);
+    const videoId = ad.creative.video_id ?? ad.creative.object_story_spec?.video_data?.video_id;
 
     const row = await prisma.creative.upsert({
       where: {
@@ -241,6 +249,7 @@ export async function syncMetaForClient(params: {
       update: {
         name: ad.creative.name ?? ad.name,
         thumbnailUrl: ad.creative.thumbnail_url,
+        videoId,
         campaignId,
         adId: ad.id,
       },
@@ -252,6 +261,7 @@ export async function syncMetaForClient(params: {
         campaignId,
         name: ad.creative.name ?? ad.name,
         thumbnailUrl: ad.creative.thumbnail_url,
+        videoId,
       },
     });
     creativeIdByAdId.set(ad.id, row.id);

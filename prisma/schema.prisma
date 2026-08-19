@@ -118,6 +118,11 @@ model Creative {
   adId         String // ad id (insights are fetched at ad level)
   name         String?
   thumbnailUrl String?
+  // Meta video asset id (object_story_spec.video_data.video_id / creative.video_id).
+  // The Graph API's video "source" field is a signed CDN URL that expires,
+  // so we store the stable id and resolve a fresh playable URL on demand
+  // (see /api/media/meta-video/[creativeId]) instead of caching the URL.
+  videoId      String?
   status       String?
   createdAt    DateTime @default(now())
 
